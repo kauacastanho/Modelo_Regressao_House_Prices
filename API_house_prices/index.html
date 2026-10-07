@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Previsão de Preço</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        p {
+            color: #555;
+        }
+
+        textarea {
+            width: 100%;
+            height: 500px;
+            padding: 15px;
+            box-sizing: border-box;
+            font-family: monospace;
+            font-size: 14px;
+            resize: vertical;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 15px;
+            padding: 14px;
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #555;
+        }
+
+        #resultado {
+            margin-top: 25px;
+            padding: 15px;
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .erro {
+            color: red;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Previsão de Preço de Casa</h1>
+
+    <p>
+        Cole abaixo o JSON com os dados da casa:
+    </p>
+
+    <textarea id="jsonDados">{
+  "Zoneamento": "RL",
+  "AreaTerreno": 8450,
+  "Bairro": "CollgCr",
+  "TipoConstrucao": "1Fam",
+  "EstiloCasa": "2Story",
+  "QualidadeGeral": 7,
+  "CondicaoGeral": 5,
+  "AnoConstrucao": 2003,
+  "AnoReforma": 2003,
+  "TipoFundacao": "PConc",
+  "QualidadeExterna": "Gd",
+  "CondicaoExterna": "TA",
+  "AreaTotalPorao": 856,
+  "QualidadeAquecimento": "Ex",
+  "ArCentral": "Y",
+  "AreaHabitavel": 1710,
+  "BanheirosCompletos": 2,
+  "MeiosBanheiros": 1,
+  "QualidadeCozinha": "Gd",
+  "TotalComodos": 8,
+  "Lareiras": 0,
+  "TipoGaragem": "Attchd",
+  "AcabamentoGaragem": "RFn",
+  "VagasGaragem": 2,
+  "PavimentacaoEntrada": "Y",
+  "AreaDeckMadeira": 0,
+  "AreaVarandaAberta": 61,
+  "AreaPiscina": 0,
+  "QualidadePiscina": "NoPool",
+  "CondicaoVenda": "Normal"
+}</textarea>
+
+    <button onclick="prever()">
+        Prever preço
+    </button>
+
+    <div id="resultado"></div>
+
+</div>
+
+
+<script>
+
+async function prever() {
+
+    const campo = document.getElementById("jsonDados");
+    const resultado = document.getElementById("resultado");
+
+    try {
+
+        // Transformar o texto em JSON
+        const dados = JSON.parse(campo.value);
+
+        resultado.innerText = "Calculando...";
+        resultado.className = "";
+
+        // Enviar JSON para a API
+        const resposta = await fetch("/prever", {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify(dados)
+
+        });
+
+        const retorno = await resposta.json();
+
+        if (resposta.ok) {
+
+            resultado.innerText =
+                "Preço previsto: $" +
+                retorno.preco_previsto.toLocaleString("en-US", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+
+        } else {
+
+            resultado.innerText =
+                "Erro: " + JSON.stringify(retorno);
+
+            resultado.className = "erro";
+        }
+
+    } catch (erro) {
+
+        resultado.innerText =
+            "JSON inválido. Verifique os dados informados.";
+
+        resultado.className = "erro";
+    }
+}
+
+</script>
+
+</body>
+
+</html>
