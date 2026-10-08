@@ -14,10 +14,7 @@ Modelo de **regressão linear** para prever o preço de venda de casas (`SalePri
 6. [API](#6-api)
 7. [Interface web](#7-interface-web)
 8. [Como executar](#8-como-executar)
-9. [Interpretação do modelo](#9-interpretação-do-modelo)
-10. [Limitações e pontos de atenção](#10-limitações-e-pontos-de-atenção)
-11. [Sugestões de melhoria](#11-sugestões-de-melhoria)
-12. [Dicionário de variáveis](#12-dicionário-de-variáveis)
+9. [Dicionário de variáveis](#12-dicionário-de-variáveis)
 
 ---
 
@@ -278,15 +275,6 @@ A API carrega três arquivos gerados com `joblib`:
 
 Os três foram serializados com **scikit-learn 1.6.1**.
 
-> O script `g1ml_house_prices.py` **não contém** as linhas de exportação. Recomenda-se adicionar ao final:
->
-> ```python
-> import joblib
-> joblib.dump(modelo,  "modelo.pkl")
-> joblib.dump(encoder, "encoder.pkl")
-> joblib.dump(scaler,  "scaler.pkl")
-> ```
-
 ---
 
 ## 6. API
@@ -394,26 +382,7 @@ Implementada em **FastAPI** (`api.py`).
 { "preco_previsto": 192628.85 }
 ```
 
-**422 Unprocessable Entity** — campo ausente ou de tipo errado (validação do Pydantic).
-
-### 6.5 Exemplo com `curl`
-
-```bash
-curl -X POST http://127.0.0.1:8000/prever \
-  -H "Content-Type: application/json" \
-  -d @casa.json
-```
-
-### 6.6 Exemplo com Python
-
-```python
-import requests
-
-r = requests.post("http://127.0.0.1:8000/prever", json=casa)
-print(r.json()["preco_previsto"])
-```
-
-### 6.7 Casas de exemplo e previsões obtidas
+### 6.5 Casas de exemplo e previsões obtidas
 
 As quatro casas de teste do script foram executadas com os `.pkl` entregues:
 
@@ -423,8 +392,6 @@ As quatro casas de teste do script foram executadas com os `.pkl` entregues:
 | Casa média | NAmes | 6 | 1600 | **192.628,85** |
 | Casa grande | NridgHt | 8 | 2800 | **422.703,37** |
 | Alto padrão | NridgHt | 10 | 3500 | **748.161,18** |
-
-A progressão é coerente com o esperado (mais qualidade e área, maior preço). O resultado do alto padrão, porém, deve ser lido com cuidado (ver [seção 10](#10-limitações-e-pontos-de-atenção)).
 
 ---
 
@@ -436,8 +403,6 @@ A progressão é coerente com o esperado (mais qualidade e área, maior preço).
 - Um botão **"Prever preço"** que faz `fetch("/prever", { method: "POST", ... })`.
 - Exibição do resultado formatado em dólares (`toLocaleString("en-US")`).
 - Tratamento de erro: JSON inválido na caixa de texto ou resposta de erro da API (exibida em vermelho).
-
-Como a página é servida pela própria API e chama `/prever` por caminho relativo, não há problemas de CORS.
 
 ---
 
@@ -451,11 +416,9 @@ pip install fastapi uvicorn pandas numpy scikit-learn==1.6.1 joblib
 
 (Para o notebook de análise: `matplotlib`, `seaborn`, `plotly`.)
 
-> Use a mesma versão do scikit-learn do treino (1.6.1) para evitar o `InconsistentVersionWarning` ao carregar os `.pkl`.
-
 ### 8.2 Subir a API
 
-Dentro da pasta que contém `api.py` e os `.pkl` (os caminhos são relativos):
+Dentro da pasta que contém `api.py` e os `.pkl`:
 
 ```bash
 python -m uvicorn api:app --reload
@@ -469,96 +432,12 @@ python -m uvicorn api:app --reload
 
 1. Baixe `train.csv` do Kaggle e coloque ao lado do script.
 2. Execute `g1ml_house_prices.py` (ou o notebook original no Colab).
-3. Exporte os três artefatos com `joblib.dump` (ver seção 5).
+3. Exporte os três artefatos com `joblib.dump`.
 4. Copie os `.pkl` para a pasta da API.
 
 ---
 
-## 9. Interpretação do modelo
-
-Como as variáveis numéricas foram padronizadas, o coeficiente de cada uma indica **quanto o preço varia (em USD) para um aumento de 1 desvio padrão** da variável, mantendo as demais constantes. Isso torna as magnitudes comparáveis entre si.
-
-### Numéricas (coeficientes do `modelo.pkl`)
-
-| Variável | Coeficiente (USD / 1 desvio padrão) |
-|---|---:|
-| `AreaHabitavel` | +30.846 |
-| `AnoConstrucao` | +12.515 |
-| `AreaTotalPorao` | +11.739 |
-| `QualidadeGeral` | +10.814 |
-| `VagasGaragem` | +7.817 |
-| `CondicaoGeral` | +7.238 |
-| `AreaTerreno` | +6.886 |
-| `AreaPiscina` | +5.185 |
-| `Lareiras` | +2.590 |
-| `AreaDeckMadeira` | +2.258 |
-| `AreaVarandaAberta` | +1.298 |
-| `MeiosBanheiros` | +1.187 |
-| `AnoReforma` | +376 |
-| `BanheirosCompletos` | +292 |
-| `TotalComodos` | −2.428 |
-
-**Leitura:** a área habitável é, com folga, o fator numérico mais influente, seguida por ano de construção, porão e qualidade geral.
-
-### Categóricas (maiores efeitos, em USD, em relação à ausência da categoria)
-
-| Efeito positivo | USD | Efeito negativo | USD |
-|---|---:|---|---:|
-| `QualidadePiscina_Ex` | +149.598 | `QualidadePiscina_Fa` | −79.978 |
-| `Bairro_StoneBr` | +44.763 | `QualidadePiscina_Gd` | −68.827 |
-| `Bairro_NoRidge` | +32.145 | `EstiloCasa_2.5Fin` | −29.386 |
-| `QualidadeExterna_Ex` | +29.613 | `Zoneamento_C (all)` | −22.669 |
-| `QualidadeCozinha_Ex` | +21.505 | `TipoGaragem_2Types` | −22.093 |
-| `Bairro_Crawfor` | +20.962 | `Bairro_NWAmes` | −19.288 |
-| `Bairro_NridgHt` | +19.541 | `Bairro_Gilbert` | −17.855 |
-
-Como não foi usado `drop="first"`, cada dummy é lida em relação ao conjunto das demais categorias da mesma variável, e a interpretação individual é aproximada.
-
----
-
-## 10. Limitações e pontos de atenção
-
-**Sobre o modelo**
-
-- **Regressão linear sem transformação do alvo.** Preços de imóveis costumam ser assimétricos à direita; sem `log(PrecoVenda)`, o modelo tende a errar proporcionalmente mais nas casas caras e pode, em teoria, prever valores negativos para casas muito simples.
-- **Extrapolação linear.** Combinações de atributos acima do que existe na base (como a casa "alto padrão" dos exemplos, com 3500 pés², piscina de 500 e qualidade 10) produzem previsões pouco confiáveis.
-- **Piscina com coeficientes instáveis.** Pouquíssimas casas da base têm piscina (a coluna tem 1453 nulos em 1460 linhas). Por isso `QualidadePiscina_Ex` (+149 mil) e `Gd`/`Fa` (negativos) refletem poucos exemplos e não devem ser interpretados como regra.
-- **Multicolinearidade.** `TotalComodos` tem coeficiente negativo, contraintuitivo, provavelmente porque a informação já está em `AreaHabitavel`. Isso não prejudica muito a previsão, mas atrapalha a interpretação.
-- **Validação única.** Só há um *hold-out* de 20%; não há validação cruzada, então a métrica pode variar conforme o `random_state`.
-- **Escopo geográfico e temporal.** O modelo reflete o mercado de Ames, Iowa (2006–2010). Os bairros só existem para essa cidade, e o preço previsto está em USD daquela época.
-
-**Sobre os dados**
-
-- A remoção de outliers é manual (2 registros), e a de índice 185 depende da posição no `DataFrame`. Se o CSV for reordenado, a linha removida muda. Usar o `Id` do Kaggle é mais robusto.
-- A variável `maior_valor` na etapa do `AnoConstrucao` é criada, mas não é usada; a remoção real é feita por `drop(185)`.
-
-**Sobre a API**
-
-- **Todos os 30 campos são obrigatórios.** Não há valores padrão nem tratamento de ausentes.
-- **Categorias não validadas.** Um valor inexistente (ex.: `"Bairro": "Xyz"`) não gera erro: o encoder o ignora e a previsão sai sem a contribuição daquela variável, de forma silenciosa. Usar `Literal`/`Enum` no Pydantic evitaria isso.
-- **Sem validação de faixa.** `QualidadeGeral: 50` ou `AreaHabitavel: -100` são aceitos.
-- **Dependência da ordem.** A API assume que `select_dtypes` devolve as colunas numéricas na mesma ordem do treino. Isso funciona hoje porque `colunas` define a ordem, mas é frágil; o ideal é um único `Pipeline`/`ColumnTransformer`.
-- **Caminhos relativos.** Os `.pkl` e o `index.html` são carregados a partir do diretório de trabalho; o `uvicorn` deve ser iniciado dentro da pasta da API.
-- **Segurança.** Arquivos `.pkl` executam código ao serem carregados; carregue apenas arquivos de fonte confiável.
-- **Versão do scikit-learn.** Carregar os `.pkl` em versão diferente da 1.6.1 emite aviso e, em casos extremos, pode causar resultados inválidos.
-
----
-
-## 11. Sugestões de melhoria
-
-1. **Aplicar `np.log1p` ao alvo** e reverter com `np.expm1` na previsão.
-2. **Unificar o pré-processamento em um `Pipeline` + `ColumnTransformer`** e salvar um único `.pkl`, eliminando o risco de divergência entre treino e API.
-3. **Validação cruzada** (`cross_val_score`, `KFold`) para uma estimativa mais estável do desempenho.
-4. **Comparar com outros modelos**: `Ridge`, `Lasso`, `ElasticNet`, `RandomForest`, `GradientBoosting`/`XGBoost`.
-5. **Validar entradas na API** com `Literal`/`Enum` e `Field(ge=..., le=...)` do Pydantic, e retornar erros claros.
-6. **Engenharia de atributos**: idade da casa (`AnoVenda − AnoConstrucao`), área total (porão + habitável), indicador "foi reformada", agrupamento de bairros raros.
-7. **Endpoint `/health`** e **testes automatizados** (`pytest` + `TestClient`).
-8. **`requirements.txt`** com versões fixas e, opcionalmente, um `Dockerfile`.
-9. **Conversão de unidades** (pés² → m², USD → BRL) na interface, se o público for brasileiro.
-
----
-
-## 12. Dicionário de variáveis
+## 9. Dicionário de variáveis
 
 | Nome no projeto | Coluna original | Tipo | Descrição |
 |---|---|---|---|
