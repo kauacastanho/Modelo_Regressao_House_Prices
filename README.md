@@ -253,7 +253,7 @@ r2   = r2_score(y_teste, y_pred)
 
 Também é gerado um gráfico **Preço Real × Preço Previsto** com a linha de referência y = x; quanto mais próximos os pontos dessa linha, melhor o modelo.
 
-**Resultados no conjunto de teste (292 casas, `random_state=42`):**
+**Resultados no conjunto de teste (292 casas):**
 
 | Métrica | Valor | Leitura |
 |---|---:|---|
@@ -263,13 +263,6 @@ Também é gerado um gráfico **Preço Real × Preço Previsto** com a linha de 
 
 Para contexto, no conjunto de teste o preço médio é US$ 179.738,83 e o desvio padrão é US$ 73.428,99. O MAE equivale a cerca de 10% do preço médio.
 
-> Esses valores foram obtidos reexecutando o pipeline do script com o `train.csv`. Os coeficientes e o intercepto reproduzidos coincidem com os do `modelo.pkl` entregue (diferença da ordem de 1e-9), então as métricas valem para o modelo que a API utiliza.
-
-**Observações sobre o desempenho:**
-
-- A distância entre RMSE e MAE (quase o dobro) indica erros concentrados em poucas casas. Um R² de 0,76 é modesto para este dataset; modelos com alvo em log ou baseados em árvores costumam superar bastante esse valor.
-- A menor previsão do teste foi de apenas US$ 3.607,80, o que ilustra o risco de previsões irreais (até negativas) em uma regressão linear sem transformação do alvo.
-- Como há uma única divisão treino/teste, a métrica pode mudar com outro `random_state`.
 
 ---
 
