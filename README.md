@@ -65,7 +65,7 @@ modelo.pkl + encoder.pkl + scaler.pkl ──► API FastAPI ──► index.html
 API_house_prices/
 ├── api.py          # API FastAPI (validação, pré-processamento e previsão)
 ├── index.html      # Interface web para testar a API
-├── modelo.pkl      # Regressão Linear treinada
+├── modelo.pkl      # LinearRegression treinada
 ├── encoder.pkl     # OneHotEncoder ajustado no treino
 └── scaler.pkl      # StandardScaler ajustado no treino
 
@@ -172,7 +172,7 @@ X_treino, X_teste, y_treino, y_teste = train_test_split(
 )
 ```
 
-- 80% treino (≈ 1166 linhas) e 20% teste (≈ 292 linhas).
+- 80% treino (1166 linhas) e 20% teste (292 linhas).
 - A divisão é feita **antes** de qualquer ajuste de encoder/scaler, o que evita *data leakage*.
 
 ### 4.3 Codificação das variáveis categóricas
@@ -253,13 +253,23 @@ r2   = r2_score(y_teste, y_pred)
 
 Também é gerado um gráfico **Preço Real × Preço Previsto** com a linha de referência y = x; quanto mais próximos os pontos dessa linha, melhor o modelo.
 
-> **Preencha aqui os resultados da sua execução** (o `train.csv` não estava no zip, então não foi possível recalcular as métricas):
->
-> | Métrica | Valor |
-> |---|---|
-> | MAE | _a preencher_ |
-> | RMSE | _a preencher_ |
-> | R² | _a preencher_ |
+**Resultados no conjunto de teste (292 casas, `random_state=42`):**
+
+| Métrica | Valor | Leitura |
+|---|---:|---|
+| **MAE** | **US$ 18.409,64** | Em média, a previsão erra cerca de US$ 18,4 mil |
+| **RMSE** | **US$ 35.731,37** | Bem acima do MAE: há alguns erros grandes, provavelmente em casas caras |
+| **R²** | **0,7624** | O modelo explica cerca de 76% da variância do preço |
+
+Para contexto, no conjunto de teste o preço médio é US$ 179.738,83 e o desvio padrão é US$ 73.428,99. O MAE equivale a cerca de 10% do preço médio.
+
+> Esses valores foram obtidos reexecutando o pipeline do script com o `train.csv`. Os coeficientes e o intercepto reproduzidos coincidem com os do `modelo.pkl` entregue (diferença da ordem de 1e-9), então as métricas valem para o modelo que a API utiliza.
+
+**Observações sobre o desempenho:**
+
+- A distância entre RMSE e MAE (quase o dobro) indica erros concentrados em poucas casas. Um R² de 0,76 é modesto para este dataset; modelos com alvo em log ou baseados em árvores costumam superar bastante esse valor.
+- A menor previsão do teste foi de apenas US$ 3.607,80, o que ilustra o risco de previsões irreais (até negativas) em uma regressão linear sem transformação do alvo.
+- Como há uma única divisão treino/teste, a métrica pode mudar com outro `random_state`.
 
 ---
 
