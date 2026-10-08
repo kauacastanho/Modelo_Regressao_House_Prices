@@ -126,7 +126,7 @@ Isso transforma o nulo em uma categoria própria, que o `OneHotEncoder` consegue
 
 ### 3.5 Análise exploratória
 
-- **Histogramas** (`plotly.express.histogram`, 100 bins) de todas as 19 colunas numéricas, incluindo o alvo.
+- **Histogramas** (`plotly.express.histogram`) de todas as 19 colunas numéricas, incluindo o alvo.
 - **Boxplots** das mesmas colunas, para identificar outliers.
 - **Matriz de correlação** (`seaborn.heatmap`) entre as colunas numéricas.
 - **Gráficos de dispersão** contra `PrecoVenda` para: `AreaHabitavel`, `AreaTerreno`, `QualidadeGeral`, `AnoConstrucao` e `AreaTotalPorao`.
