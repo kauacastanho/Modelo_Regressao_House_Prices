@@ -141,7 +141,6 @@ Com base na matriz de correlação, foram removidas três colunas:
 | `Quartos` | Tende a ser redundante com `TotalComodos` |
 | `AreaGaragem` | Tende a ser redundante com `VagasGaragem` |
 
-> A justificativa acima é a interpretação típica para esse tipo de remoção. Vale registrar no notebook os valores de correlação que embasaram cada decisão.
 
 Resultado: **30 features** finais (15 numéricas + 15 categóricas), que são exatamente os 30 campos aceitos pela API.
 
@@ -174,7 +173,6 @@ X_treino, X_teste, y_treino, y_teste = train_test_split(
 ```
 
 - 80% treino (≈ 1166 linhas) e 20% teste (≈ 292 linhas).
-- `random_state=42` garante reprodutibilidade.
 - A divisão é feita **antes** de qualquer ajuste de encoder/scaler, o que evita *data leakage*.
 
 ### 4.3 Codificação das variáveis categóricas
@@ -187,7 +185,6 @@ X_teste_codificado  = encoder.transform(X_teste_categorico)
 
 - `handle_unknown="ignore"`: categorias nunca vistas no treino geram uma linha de zeros (não quebram a API).
 - As 15 colunas categóricas geram **92 colunas** binárias.
-- Não foi usado `drop="first"`; como o `LinearRegression` do scikit-learn lida com multicolinearidade (usa mínimos quadrados via SVD/pseudo-inversa), isso não impede o treino, mas afeta a interpretação individual dos coeficientes.
 
 | Variável | Nº de categorias |
 |---|---:|
@@ -230,7 +227,6 @@ X_teste_final  = np.hstack([X_teste_numerico_padronizado,  X_teste_codificado])
 
 **Ordem das colunas: primeiro as 15 numéricas padronizadas, depois as 92 dummies** — total de **107 colunas**. Essa ordem precisa ser idêntica na API.
 
-> No script, existe um primeiro `np.hstack` com dados numéricos *não* padronizados, que é depois sobrescrito pelo segundo. Ele pode ser removido sem efeito no resultado.
 
 ### 4.6 Treinamento
 
